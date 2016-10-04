@@ -27,3 +27,12 @@
 *.exe
 *.out
 *.app
+
+__pycache__
+
+# CMake files
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+detect-cars
