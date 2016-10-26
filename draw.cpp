@@ -13,19 +13,24 @@
 #define FROM_LEFT    300
 #define FROM_RIGHT   35
 #define CAR_SIZE     5000
+#define FDGFACTOR    15 
 
 using namespace cv;
 
 // NEED MANY MORE MEASUREMENTS
-int speed_estimate(long count){
-    int speed = count * .4;
+int to_speed(long count){
+    double factor = 0.35; 
 
-    return speed;
+    return count * factor;
 }
+
+int dist_right(int rows) { return rows - FROM_RIGHT; }
+int dist_left(int rows)  { return rows - FROM_LEFT;  }
+
+bool is_car(std::vector<Point> contour) { return contourArea(contour) > CAR_SIZE; }
 
 // This function draws the verticle lines and 
 // estimates the speed of the vehicles.
-// TODO major refactoring into better logical groupings
 void draw_contours(Mat *forMask, Mat *img)
 {
     Size sz = img->size();
@@ -48,8 +53,9 @@ void draw_contours(Mat *forMask, Mat *img)
     }
 
     // Draw verticle lines
-    line(*img, Point(rows-FROM_RIGHT, 0), Point(rows-FROM_RIGHT, cols), Scalar(0, 0, 255), 1, 8, 0);
-    line(*img, Point(rows-FROM_LEFT, 0), Point(rows-FROM_LEFT, cols), Scalar(255, 0, 255), 1, 8, 0);
+    line(*img, Point(dist_right(rows),0), Point(dist_right(rows), cols), Scalar(0,0,255), 1, 8, 0);
+    line(*img, Point(dist_left(rows),0), Point(dist_left(rows), cols), Scalar(255,0,255), 1, 8, 0);
+
     for (size_t i = 0; i < contours.size(); ++i) {
         rectangle(*img, boundRect[i].tl(), boundRect[i].br(), Scalar(0,255,0), 1, 8, 0);
         boundRect.erase(remove_if(boundRect.begin(),boundRect.end(),
@@ -59,23 +65,22 @@ void draw_contours(Mat *forMask, Mat *img)
                     return r.area() < min_area;
                     }), boundRect.end());
         
-        if (abs(boundRect[i].tl().x - (rows - FROM_RIGHT)) < 15 && contourArea(contours[i]) > CAR_SIZE) {
+        if (abs(boundRect[i].tl().x - dist_right(rows)) < FDGFACTOR && is_car(contours[i])) {
             countFlag = true;
-            //cout << contourArea(contours[i]) << '\n' << endl;
         }
 
         if (countFlag) {
-            if (abs(boundRect[i].tl().x - (rows - FROM_LEFT)) < 15 && contourArea(contours[i]) > CAR_SIZE) {
+            if (abs(boundRect[i].tl().x - dist_left(rows)) < FDGFACTOR && is_car(contours[i])) {
                 countFlag = true;
                 std::cout << "\nThe count is: " << count << '\n';
-                //cout << "The contour Area is: " << contourArea(contours[i]) << '\n' << endl;
+                std::cout << "\nSpeed: " << to_speed(count) <<  " MPH\n";
             }
             ++count;
-            //if (count > 200000000000) 
-            //    count = 0;
-            if (contourArea(contours[i]) > CAR_SIZE && ((abs(boundRect[i].tl().x - (rows - 10)) < 15) || (abs(boundRect[i].tl().x - (rows - 400)) < 15))){ 
+
+            if (is_car(contours[i]) && ((abs(boundRect[i].tl().x - (rows - 10)) < FDGFACTOR) || (abs(boundRect[i].tl().x - (rows - 400)) < FDGFACTOR))) { 
                 countFlag = false;
                 std::cout << "\nThe count is: " << count << '\n';
+                std::cout << "\nSpeed: " << to_speed(count) <<  " MPH\n";
             }
         }
     }

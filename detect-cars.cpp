@@ -47,7 +47,6 @@ int main()
     //namedWindow("foreground cam", WINDOW_NORMAL);
     namedWindow("mean background image", WINDOW_NORMAL);
 
-    // Maybe try MOG for less noise / lessen shadow effects
     //createBackgroundSubtractorMOG2(history=500, double varThreshold=16, detectShadows=true)
     bgModel = createBackgroundSubtractorMOG2(400, 16, false).dynamicCast<BackgroundSubtractor>();
 
@@ -65,8 +64,8 @@ int main()
             foreImg.create(img.size(), img.type());
 
         bgModel->apply(img, foreMask, updateModel ? -1 : 0);
-        smooth_mask(&foreMask);
 
+        smooth_mask(&foreMask);
         foreImg = Scalar::all(0);
         img.copyTo(foreImg, foreMask);
 
