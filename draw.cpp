@@ -18,10 +18,10 @@
 using namespace cv;
 
 // NEED MANY MORE MEASUREMENTS
-int to_speed(long count){
+double to_speed(long count){
     double factor = 0.35; 
 
-    return count * factor;
+    return (double) count * factor;
 }
 
 int dist_right(int rows) { return rows - FROM_RIGHT; }
@@ -31,9 +31,9 @@ bool is_car(std::vector<Point> contour) { return contourArea(contour) > CAR_SIZE
 
 // This function draws the verticle lines and 
 // estimates the speed of the vehicles.
-void draw_contours(Mat *forMask, Mat *img)
+void draw_contours(Mat& forMask, Mat& img)
 {
-    Size sz = img->size();
+    Size sz = img.size();
     int rows = sz.height;
     int cols = sz.width;
     bool countFlag = false;
@@ -41,7 +41,7 @@ void draw_contours(Mat *forMask, Mat *img)
     std::vector<std::vector<Point> > contours;
     std::vector<Vec4i> hierarchy;
 
-    findContours(*forMask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0,0));
+    findContours(forMask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0,0));
 
     //drawContours(img, contours, -1, Scalar(0,0,255), 2);
     std::vector<Rect> boundRect(contours.size());
@@ -53,11 +53,11 @@ void draw_contours(Mat *forMask, Mat *img)
     }
 
     // Draw verticle lines
-    line(*img, Point(dist_right(rows),0), Point(dist_right(rows), cols), Scalar(0,0,255), 1, 8, 0);
-    line(*img, Point(dist_left(rows),0), Point(dist_left(rows), cols), Scalar(255,0,255), 1, 8, 0);
+    line(img, Point(dist_right(rows),0), Point(dist_right(rows), cols), Scalar(0,0,255), 1, 8, 0);
+    line(img, Point(dist_left(rows),0), Point(dist_left(rows), cols), Scalar(255,0,255), 1, 8, 0);
 
     for (size_t i = 0; i < contours.size(); ++i) {
-        rectangle(*img, boundRect[i].tl(), boundRect[i].br(), Scalar(0,255,0), 1, 8, 0);
+        rectangle(img, boundRect[i].tl(), boundRect[i].br(), Scalar(0,255,0), 1, 8, 0);
         boundRect.erase(remove_if(boundRect.begin(),boundRect.end(),
                     [] (Rect r)
                     {

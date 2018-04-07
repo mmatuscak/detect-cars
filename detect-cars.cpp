@@ -22,11 +22,11 @@ void poll_keyboard(char k){
         }
 }
 
-void smooth_mask(Mat *forMask){
-        GaussianBlur(*forMask, *forMask, Size(11,11), 3.5, 3.5);
-        threshold(*forMask, *forMask, 100, 255, THRESH_BINARY);
-        dilate(*forMask, *forMask, Mat());
-        erode(*forMask, *forMask, Mat());
+void smooth_mask(Mat& forMask){
+        GaussianBlur(forMask, forMask, Size(11,11), 3.5, 3.5);
+        threshold(forMask, forMask, 100, 255, THRESH_BINARY);
+        dilate(forMask, forMask, Mat());
+        erode(forMask, forMask, Mat());
 }
 
 int main()
@@ -65,14 +65,14 @@ int main()
 
         bgModel->apply(img, foreMask, updateModel ? -1 : 0);
 
-        smooth_mask(&foreMask);
+        smooth_mask(foreMask);
         foreImg = Scalar::all(0);
         img.copyTo(foreImg, foreMask);
 
         Mat bgImg;
         bgModel->getBackgroundImage(bgImg);
 
-        draw_contours(&foreMask, &img);
+        draw_contours(foreMask, img);
 
         imshow("cam", img);
         //imshow("foreground mask", foreMask);
